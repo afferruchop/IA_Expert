@@ -1,14 +1,14 @@
 # Guía práctica: Fundamentos de LLM y Prompt Engineering
 
-*Ruta de aprendizaje en 3 bloques: entender cómo funciona un modelo, dominar los 5 elementos del prompt y comprobarlo con 10 experimentos comparando un prompt vago contra uno preciso.*
+_Ruta de aprendizaje en 3 bloques: entender cómo funciona un modelo, dominar los 5 elementos del prompt y comprobarlo con 10 experimentos comparando un prompt vago contra uno preciso._
 
 ## Cómo usar esta guía
 
-| Bloque | Qué haces | Tiempo estimado |
-| --- | --- | --- |
-| 1. Fundamentos | Lees los conceptos y haces los módulos gratuitos | 2 a 3 h |
-| 2. Los 5 elementos del prompt | Estudias cada elemento aplicado a un email, un resumen y una extracción de datos | 1 h |
-| 3. Laboratorio de 10 prompts | Ejecutas cada par (vago vs. preciso) y comparas respuestas | 2 h |
+| Bloque                        | Qué haces                                                                        | Tiempo estimado |
+| ----------------------------- | -------------------------------------------------------------------------------- | --------------- |
+| 1. Fundamentos                | Lees los conceptos y haces los módulos gratuitos                                 | 2 a 3 h         |
+| 2. Los 5 elementos del prompt | Estudias cada elemento aplicado a un email, un resumen y una extracción de datos | 1 h             |
+| 3. Laboratorio de 10 prompts  | Ejecutas cada par (vago vs. preciso) y comparas respuestas                       | 2 h             |
 
 Regla de oro: **no leas los prompts, ejecútalos**. El aprendizaje real ocurre al ver la diferencia entre dos respuestas.
 
@@ -27,6 +27,8 @@ Regla de oro: **no leas los prompts, ejecútalos**. El aprendizaje real ocurre a
 - No "busca" la respuesta en una base de datos: la **genera** palabra por palabra. Por eso puede sonar seguro y equivocarse (alucinación).
 - Responde a **patrones**. Si tu prompt es ambiguo, completa con el patrón más común, que suele ser genérico.
 - Cuanto más claro es tu pedido, más se reduce el espacio de respuestas posibles.
+
+**Por qué ocurre la alucinación:** no es un fallo separado, sino la consecuencia directa de predecir el token más plausible. Si el contexto no contiene la respuesta, el modelo rellena con lo estadísticamente verosímil, no con lo verdadero. No tiene un verificador de hechos interno. Por eso el contexto que tú aportas es el ancla de verdad más confiable que tienes, y por eso conviene pedirle "si no está en el texto, responde que no lo sabes" y verificar cifras, nombres y fuentes.
 
 ### 1.2 Tokens
 
@@ -56,7 +58,7 @@ Regla de oro: **no leas los prompts, ejecútalos**. El aprendizaje real ocurre a
 
 **Qué es:** la arquitectura de red neuronal (presentada en 2017) en la que se basan los LLM modernos. Su idea central es el **mecanismo de atención (self-attention)**: al procesar cada token, el modelo calcula qué otros tokens de la entrada son más relevantes para interpretarlo.
 
-**Ejemplo:** en "El banco cerró porque el río creció y *este* inundó la calle", la atención ayuda a decidir a qué se refiere "este" (el río) según el resto de la frase.
+**Ejemplo:** en "El banco cerró porque el río creció y _este_ inundó la calle", la atención ayuda a decidir a qué se refiere "este" (el río) según el resto de la frase.
 
 **Lo que implica en la práctica:**
 
@@ -64,9 +66,30 @@ Regla de oro: **no leas los prompts, ejecútalos**. El aprendizaje real ocurre a
 - Tu prompt entero influye en cada palabra generada: **el orden, las palabras clave y los ejemplos importan**.
 - Por eso un buen ejemplo dentro del prompt (few-shot) cambia tanto el estilo y la estructura de la salida.
 
-**Resumen de una línea:** el texto se divide en *tokens*, el *Transformer* usa *atención* para relacionarlos dentro del *contexto* y el *LLM* predice el siguiente token, una y otra vez, hasta formar la respuesta.
+**Resumen de una línea:** el texto se divide en _tokens_, el _Transformer_ usa _atención_ para relacionarlos dentro del _contexto_ y el _LLM_ predice el siguiente token, una y otra vez, hasta formar la respuesta.
 
-### 1.5 Cursos gratuitos recomendados
+### 1.5 Temperatura
+
+**Qué es:** el parámetro que controla qué tan "aleatoria" es la elección del siguiente token. Con `0` el modelo es casi determinista (siempre elige la opción más probable); con `0.7` hay equilibrio; con `1.5` o más es creativo pero errático. La escala exacta depende del proveedor (algunos van de 0 a 1 y otros de 0 a 2).
+
+**Cómo usarla:**
+
+- Extracción de datos, clasificación y código: cerca de `0`.
+- Redacción de emails y resúmenes: baja o media.
+- Lluvia de ideas y escritura creativa: súbela.
+- Agentes que deben ser reproducibles: temperatura baja por defecto.
+
+**Por qué te importa:** explica por qué el mismo prompt da respuestas distintas en dos ejecuciones. En los chats web normalmente no puedes cambiarla; sí en las APIs, los playgrounds y los modelos locales. En el laboratorio, los prompts 3, 4 y 10 (extracción, clasificación y código) son los más sensibles a este parámetro.
+
+### 1.6 Modelo base vs. modelo instruido
+
+**Modelo base:** solo predice el siguiente token. Si le pides "resume esto", puede continuar con más texto en vez de obedecer.
+
+**Modelo instruido (instruct / chat):** fue afinado con ejemplos de instrucción y respuesta para seguir órdenes. Es el que usas en cualquier chat comercial.
+
+**Regla práctica:** para todo lo que hagas con prompts y agentes, usa siempre la variante instruct. Cuando descargues un modelo local (por ejemplo `llama3.2` en Ollama), el modelo por defecto suele ser instruct; verifícalo en la ficha del modelo antes de usarlo.
+
+### 1.7 Cursos gratuitos recomendados
 
 **Google, Machine Learning Crash Course, módulo de Large Language Models** (va desde tokens hasta Transformers):
 
@@ -89,19 +112,23 @@ Regla de oro: **no leas los prompts, ejecútalos**. El aprendizaje real ocurre a
 3. ¿Qué ocurre con la información que no cabe en la ventana de contexto?
 4. ¿Qué problema resuelve el mecanismo de atención?
 
+### 1.8 Dónde ejecutar los experimentos
+
+Para el laboratorio puedes usar cualquier chat gratuito (ChatGPT, Claude, Gemini) o un modelo local si ya lo tienes. Lo importante es usar **el mismo modelo para las dos versiones de cada par** (vago vs. preciso): si cambias de modelo entre una y otra, la comparación no vale. Abre un chat nuevo para cada versión y anota qué modelo usaste.
+
 ---
 
 ## Bloque 2. Los 5 elementos del prompt
 
 Un prompt eficaz combina cinco elementos. No siempre necesitas todos, pero cuantos más incluyas con intención, más control tienes.
 
-| # | Elemento | Pregunta que responde | Ejemplo corto |
-| --- | --- | --- | --- |
-| 1 | **Rol** | ¿Quién debe ser el modelo? | "Actúa como ejecutivo de cobranza con 10 años de experiencia" |
-| 2 | **Tarea** | ¿Qué debe hacer, con un verbo claro? | "Redacta un email recordando un pago vencido" |
-| 3 | **Contexto** | ¿Qué necesita saber (datos, audiencia, objetivo, restricciones)? | "Cliente desde 2021, factura de 1.200 USD vencida hace 15 días, relación cordial" |
-| 4 | **Ejemplos (few-shot)** | ¿Cómo se ve una buena salida? | Uno o dos modelos de entrada y salida |
-| 5 | **Formato de salida** | ¿En qué estructura y longitud entrego? | "Asunto + 3 párrafos, máximo 120 palabras" |
+| #   | Elemento                | Pregunta que responde                                            | Ejemplo corto                                                                     |
+| --- | ----------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| 1   | **Rol**                 | ¿Quién debe ser el modelo?                                       | "Actúa como ejecutivo de cobranza con 10 años de experiencia"                     |
+| 2   | **Tarea**               | ¿Qué debe hacer, con un verbo claro?                             | "Redacta un email recordando un pago vencido"                                     |
+| 3   | **Contexto**            | ¿Qué necesita saber (datos, audiencia, objetivo, restricciones)? | "Cliente desde 2021, factura de 1.200 USD vencida hace 15 días, relación cordial" |
+| 4   | **Ejemplos (few-shot)** | ¿Cómo se ve una buena salida?                                    | Uno o dos modelos de entrada y salida                                             |
+| 5   | **Formato de salida**   | ¿En qué estructura y longitud entrego?                           | "Asunto + 3 párrafos, máximo 120 palabras"                                        |
 
 **Cómo los uso (de mayor a menor impacto):** contexto, formato, ejemplos, tarea, rol. El rol ayuda sobre todo con el tono y el nivel técnico; el contexto y el formato son los que más evitan respuestas genéricas.
 
@@ -277,7 +304,7 @@ Un prompt vago deja **decisiones sin tomar**, y el modelo las toma por ti con el
 
 **Precisa:**
 
-> &#91;ROL\] Eres un ingeniero de datos senior que hace revisión de código con enfoque didáctico. Revisa la consulta SQL siguiente. Debe devolver las ventas totales por cliente del último mes, pero muestra duplicados. Motor: PostgreSQL. \[FEW-SHOT\] Ejemplo de hallazgo: "Línea 3: JOIN sin condición genera producto cartesiano. Corrección: agregar ON c.id = v.cliente\_id. Por qué: sin ella cada fila se multiplica." \[FORMATO\] 1) Diagnóstico en una frase, 2) lista de hallazgos (línea, problema, corrección, por qué), 3) consulta corregida en un bloque de código. No cambies nada que no esté relacionado con el problema. Consulta: \[código\]
+> &#91;ROL\] Eres un ingeniero de datos senior que hace revisión de código con enfoque didáctico. Revisa la consulta SQL siguiente. Debe devolver las ventas totales por cliente del último mes, pero muestra duplicados. Motor: PostgreSQL. \[FEW-SHOT\] Ejemplo de hallazgo: "Línea 3: JOIN sin condición genera producto cartesiano. Corrección: agregar ON c.id = v.cliente_id. Por qué: sin ella cada fila se multiplica." \[FORMATO\] 1) Diagnóstico en una frase, 2) lista de hallazgos (línea, problema, corrección, por qué), 3) consulta corregida en un bloque de código. No cambies nada que no esté relacionado con el problema. Consulta: \[código\]
 
 **Qué observar:** explicación del porqué y cambios acotados.
 
@@ -287,22 +314,22 @@ Un prompt vago deja **decisiones sin tomar**, y el modelo las toma por ti con el
 
 ### Rúbrica (puntúa de 1 a 5 cada criterio)
 
-| Criterio | Pregunta |
-| --- | --- |
-| Relevancia | ¿Responde exactamente lo que necesitaba? |
-| Especificidad | ¿Usa mis datos o suena genérico? |
-| Formato | ¿Respeta la estructura y la longitud pedidas? |
-| Tono y audiencia | ¿Suena como lo usaría realmente? |
-| Usabilidad | ¿Puedo usarlo tal cual o debo reescribirlo? |
-| Fiabilidad | ¿Inventa datos o indica lo que falta? |
+| Criterio         | Pregunta                                      |
+| ---------------- | --------------------------------------------- |
+| Relevancia       | ¿Responde exactamente lo que necesitaba?      |
+| Especificidad    | ¿Usa mis datos o suena genérico?              |
+| Formato          | ¿Respeta la estructura y la longitud pedidas? |
+| Tono y audiencia | ¿Suena como lo usaría realmente?              |
+| Usabilidad       | ¿Puedo usarlo tal cual o debo reescribirlo?   |
+| Fiabilidad       | ¿Inventa datos o indica lo que falta?         |
 
 ### Tabla de registro (cópiala en una hoja de cálculo)
 
 | Prompt | Puntaje vago | Puntaje preciso | Diferencia | Elemento que más influyó (rol, contexto, few-shot, formato) | Observación |
-| --- | --- | --- | --- | --- | --- |
-| 1 |  |  |  |  |  |
-| 2 |  |  |  |  |  |
-| ... |  |  |  |  |  |
+| ------ | ------------ | --------------- | ---------- | ----------------------------------------------------------- | ----------- |
+| 1      |              |                 |            |                                                             |             |
+| 2      |              |                 |            |                                                             |             |
+| ...    |              |                 |            |                                                             |             |
 
 ### Experimentos para entender cuál elemento pesa más
 
@@ -344,4 +371,4 @@ Anota cuál elemento, al faltar, empeora más la respuesta. En la mayoría de lo
 
 Un documento o presentación con: (1) definiciones propias de LLM, token, contexto y Transformer en tus palabras, (2) los tres casos del Bloque 2 con tus propios datos, (3) la tabla de registro del Bloque 4 completa y (4) tres conclusiones sobre qué elementos del prompt te dieron más control.
 
-*Nota: los ejemplos de tokenización son ilustrativos. Los cursos y enlaces fueron verificados al preparar esta guía; si alguno cambia, busca el título del curso en el sitio oficial.*
+_Nota: los ejemplos de tokenización son ilustrativos. Los cursos y enlaces fueron verificados al preparar esta guía; si alguno cambia, busca el título del curso en el sitio oficial._
