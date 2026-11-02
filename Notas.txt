@@ -1,0 +1,15 @@
+Utilizar skills para apoyar los contextos de los agentes: 
+
+Búscar la forma mas efectiva de crear las skills mas especificas para un agente. 
+
+SDD (Spec Driven Development) ORCHESTRATOR gentleman-programming/sdd-agent-team (ojo cunsume tokens)
+TDD Importante para La IA, trabaja mejor probando primero
+
+
+OpenSpec http://github.com/Fission-AI/OpenSpec
+
+Lo mejor es que los spec esten en JIra y comunicarse por mcp
+
+Orquestador supervisa que todo funcione ok
+
+ClaudeMem (manejo de la memoria) -> mejor Engram 
